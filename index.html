@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Complete guide to build an offline AI voice assistant on Raspberry Pi 5 using Whisper + Ollama + Piper TTS" />
+  <meta property="og:title" content="Offline AI Voice Assistant — Raspberry Pi 5" />
+  <meta property="og:description" content="Whisper + Ollama + Piper: a fully offline voice assistant pipeline for Raspberry Pi 5" />
+  <meta property="og:type" content="website" />
+  <title>Offline AI Voice Assistant — Raspberry Pi 5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════ NAVBAR ══ -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">Pi5 Voice AI</span>
+      </div>
+
+      <div class="nav-links">
+        <a href="#pipeline" data-i18n="nav.pipeline">Pipeline</a>
+        <a href="#hardware" data-i18n="nav.hardware">Hardware</a>
+        <a href="#steps" data-i18n="nav.steps">Setup</a>
+        <a href="#script" data-i18n="nav.script">Script</a>
+        <a href="#next" data-i18n="nav.next">Next Steps</a>
+        <a href="https://github.com" target="_blank" rel="noopener" class="nav-github" aria-label="GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        </a>
+      </div>
+
+      <div class="lang-switcher" role="group" aria-label="Language selector">
+        <button class="lang-btn active" data-lang="pt" aria-label="Português">
+          <span class="flag">🇧🇷</span><span class="lang-code">PT</span>
+        </button>
+        <button class="lang-btn" data-lang="en" aria-label="English">
+          <span class="flag">🇺🇸</span><span class="lang-code">EN</span>
+        </button>
+        <button class="lang-btn" data-lang="zh" aria-label="中文">
+          <span class="flag">🇨🇳</span><span class="lang-code">ZH</span>
+        </button>
+        <button class="lang-btn" data-lang="de" aria-label="Deutsch">
+          <span class="flag">🇩🇪</span><span class="lang-code">DE</span>
+        </button>
+        <button class="lang-btn" data-lang="fr" aria-label="Français">
+          <span class="flag">🇫🇷</span><span class="lang-code">FR</span>
+        </button>
+      </div>
+
+      <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════ HERO ═══ -->
+  <header class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="container">
+      <div class="hero-eyebrow">
+        <span class="pill" data-i18n="hero.pill">Raspberry Pi 5 · 8 GB · 128 GB</span>
+      </div>
+      <h1 class="hero-title" data-i18n="hero.title">
+        Offline AI Voice<br><em>Assistant</em>
+      </h1>
+      <p class="hero-sub" data-i18n="hero.sub">
+        Connect Whisper + Ollama + Piper in a fully local voice pipeline — no cloud, no API keys, no monthly fees.
+      </p>
+
+      <!-- Pipeline visual -->
+      <div class="pipeline-bar" id="pipeline">
+        <div class="pipe-node">
+          <div class="pipe-icon">🎙</div>
+          <div class="pipe-label" data-i18n="pipe.mic">Microphone</div>
+          <div class="pipe-role" data-i18n="pipe.mic.role">audio input</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node pipe-highlight">
+          <div class="pipe-icon mono">Whisper</div>
+          <div class="pipe-label" data-i18n="pipe.whisper">Speech→Text</div>
+          <div class="pipe-role">STT · offline</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node pipe-highlight">
+          <div class="pipe-icon mono">Ollama</div>
+          <div class="pipe-label" data-i18n="pipe.llm">Language Model</div>
+          <div class="pipe-role">LLM · local</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node pipe-highlight">
+          <div class="pipe-icon mono">Piper</div>
+          <div class="pipe-label" data-i18n="pipe.tts">Text→Speech</div>
+          <div class="pipe-role">TTS · offline</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="pipe-icon">🔊</div>
+          <div class="pipe-label" data-i18n="pipe.spk">Speaker</div>
+          <div class="pipe-role" data-i18n="pipe.spk.role">audio output</div>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-val">~4.5</span><span class="stat-unit">GB</span><span class="stat-label" data-i18n="stat.ram">RAM used</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-val">0</span><span class="stat-unit">$</span><span class="stat-label" data-i18n="stat.cost">monthly cost</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-val">100%</span><span class="stat-unit"></span><span class="stat-label" data-i18n="stat.offline">offline</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ═══════════════════════════════ STEP 0 · HARDWARE ══ -->
+    <section class="section" id="hardware">
+      <div class="section-head">
+        <div class="step-badge">0</div>
+        <h2 data-i18n="s0.title">Required Hardware</h2>
+        <span class="badge yellow" data-i18n="s0.badge">Before you start</span>
+      </div>
+
+      <div class="hw-grid">
+        <div class="hw-card">
+          <div class="hw-emoji">🎙</div>
+          <div class="hw-name" data-i18n="hw.mic">USB Microphone</div>
+          <div class="hw-desc" data-i18n="hw.mic.desc">Any USB plug-and-play mic works. No driver needed on Linux.</div>
+          <div class="hw-rec">ReSpeaker 2-Mic HAT</div>
+        </div>
+        <div class="hw-card">
+          <div class="hw-emoji">🔊</div>
+          <div class="hw-name" data-i18n="hw.spk">Speaker</div>
+          <div class="hw-desc" data-i18n="hw.spk.desc">USB speaker with built-in amp, or via 3.5mm audio jack.</div>
+          <div class="hw-rec" data-i18n="hw.spk.rec">any USB speaker</div>
+        </div>
+        <div class="hw-card">
+          <div class="hw-emoji">💾</div>
+          <div class="hw-name" data-i18n="hw.sd">SD Card A2</div>
+          <div class="hw-desc" data-i18n="hw.sd.desc">32, 64 or 128 GB class A2 for fast model read/write speed.</div>
+          <div class="hw-rec" data-i18n="hw.sd.rec">Recommend MicroSD class A2</div>
+        </div>
+        <div class="hw-card">
+          <div class="hw-emoji">❄️</div>
+          <div class="hw-name" data-i18n="hw.cool">Cooling</div>
+          <div class="hw-desc" data-i18n="hw.cool.desc">Pi 5 runs hot during inference. Use the official active cooler or a heatsink.</div>
+          <div class="hw-rec hw-warn" data-i18n="hw.cool.rec">! important</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════ STEPS 1-6 ══════════ -->
+    <section class="section" id="steps">
+
+      <!-- Step 1 -->
+      <div class="step-block">
+        <div class="section-head">
+          <div class="step-badge">1</div>
+          <h2 data-i18n="s1.title">Prepare the System</h2>
+          <span class="badge green">~15 min</span>
+        </div>
+        <p data-i18n="s1.desc">Use <strong>Raspberry Pi OS Lite 64-bit</strong> (no desktop — saves RAM). Flash with Raspberry Pi Imager.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">terminal — system update</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code1">⎘</button>
+          </div>
+          <pre id="code1"><span class="cm"># Update everything first</span>
+sudo apt update && sudo apt upgrade -y
+
+<span class="cm"># Install audio + Python dependencies</span>
+sudo apt install -y python3-pip python3-venv ffmpeg \
+  portaudio19-dev libasound2-dev pulseaudio \
+  alsa-utils git curl
+
+<span class="cm"># Verify microphone is detected</span>
+arecord -l
+
+<span class="cm"># Verify speaker is detected</span>
+aplay -l</pre>
+        </div>
+        <div class="note info">
+          <span class="note-ico">ℹ</span>
+          <div><strong data-i18n="note.audio.title">Audio tip</strong> <span data-i18n="note.audio.body">If the USB mic doesn't appear, run <code>sudo raspi-config</code> → System Options → Audio and select the correct device.</span></div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-block">
+        <div class="section-head">
+          <div class="step-badge">2</div>
+          <h2 data-i18n="s2.title">Install Ollama + LLM</h2>
+          <span class="badge green">~20 min</span>
+        </div>
+        <p data-i18n="s2.desc">Ollama runs LLMs locally via a REST API. Native ARM64 support on Pi 5.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">terminal — install Ollama</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code2">⎘</button>
+          </div>
+          <pre id="code2"><span class="cm"># Install Ollama (native ARM64)</span>
+curl -fsSL https://ollama.com/install.sh | sh
+
+<span class="cm"># Start the service in background</span>
+ollama serve &
+
+<span class="cm"># Pull a model (see table below for options)</span>
+ollama pull gemma3:4b
+
+<span class="cm"># Quick test</span>
+ollama run gemma3:4b "Hello, are you running offline?"</pre>
+        </div>
+
+        <p class="subsection-label" data-i18n="s2.models.title">Choose a model based on available RAM:</p>
+        <div class="model-grid">
+          <div class="model-card">
+            <div class="model-name">gemma3:1b</div>
+            <div class="model-meta">~800 MB · Google</div>
+            <div class="bar-bg"><div class="bar" style="width:12%"></div></div>
+            <div class="model-tag" data-i18n="m.fast">fastest, simple answers</div>
+          </div>
+          <div class="model-card model-rec">
+            <div class="model-badge-rec" data-i18n="m.recommended">recommended</div>
+            <div class="model-name">gemma3:4b</div>
+            <div class="model-meta">~3.5 GB · Google</div>
+            <div class="bar-bg"><div class="bar" style="width:44%"></div></div>
+            <div class="model-tag" data-i18n="m.balanced">best quality/performance ratio</div>
+          </div>
+          <div class="model-card">
+            <div class="model-name">qwen2.5:3b</div>
+            <div class="model-meta">~2.5 GB · Alibaba</div>
+            <div class="bar-bg"><div class="bar" style="width:32%"></div></div>
+            <div class="model-tag" data-i18n="m.multilang">strong multilingual</div>
+          </div>
+          <div class="model-card">
+            <div class="model-name">phi3:mini</div>
+            <div class="model-meta">~2.3 GB · Microsoft</div>
+            <div class="bar-bg"><div class="bar" style="width:29%"></div></div>
+            <div class="model-tag" data-i18n="m.efficient">very efficient</div>
+          </div>
+        </div>
+        <div class="note success">
+          <span class="note-ico">✓</span>
+          <div><strong data-i18n="note.part1.title">Part 1 done</strong> <span data-i18n="note.part1.body">Ollama is now running a REST API on port <code>11434</code> — we'll call this from the Python script.</span></div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-block">
+        <div class="section-head">
+          <div class="step-badge">3</div>
+          <h2 data-i18n="s3.title">Install Whisper (STT)</h2>
+          <span class="badge cyan">~10 min</span>
+        </div>
+        <p data-i18n="s3.desc">We use <strong>faster-whisper</strong>, an optimized version using CTranslate2 — much faster than vanilla Whisper on Pi 5.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">terminal</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code3">⎘</button>
+          </div>
+          <pre id="code3"><span class="cm"># Create Python virtual environment</span>
+python3 -m venv ~/assistant
+source ~/assistant/bin/activate
+
+<span class="cm"># Install faster-whisper + audio dependencies</span>
+pip install faster-whisper sounddevice numpy
+
+<span class="cm"># Test audio recording (5 seconds)</span>
+python3 -c "
+import sounddevice as sd
+import numpy as np
+print('Recording 5 seconds...')
+audio = sd.rec(int(5 * 16000), samplerate=16000, channels=1, dtype='float32')
+sd.wait()
+print('OK! Shape:', audio.shape)
+"</pre>
+        </div>
+
+        <div class="whisper-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="tbl.model">Model</th>
+                <th data-i18n="tbl.ram">RAM</th>
+                <th data-i18n="tbl.speed">Speed</th>
+                <th data-i18n="tbl.quality">Quality</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mono cyan">tiny</td><td>~150 MB</td><td class="green" data-i18n="spd.vfast">very fast</td><td data-i18n="q.fair">fair</td></tr>
+              <tr><td class="mono cyan">base</td><td>~290 MB</td><td class="green" data-i18n="spd.fast">fast</td><td data-i18n="q.good">good</td></tr>
+              <tr class="row-rec"><td class="mono cyan">small ⭐</td><td>~490 MB</td><td class="yellow" data-i18n="spd.med">medium</td><td class="green" data-i18n="q.great">great — recommended</td></tr>
+              <tr><td class="mono cyan">medium</td><td>~1.5 GB</td><td class="yellow" data-i18n="spd.slow">slow</td><td class="green" data-i18n="q.exc">excellent</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-block">
+        <div class="section-head">
+          <div class="step-badge">4</div>
+          <h2 data-i18n="s4.title">Install Piper TTS</h2>
+          <span class="badge cyan">~10 min</span>
+        </div>
+        <p data-i18n="s4.desc"><strong>Piper</strong> is an offline TTS engine by Nabu Casa (Home Assistant team). Has a native Portuguese voice and runs great on Pi.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">terminal</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code4">⎘</button>
+          </div>
+          <pre id="code4"><span class="cm"># Inside active venv</span>
+pip install piper-tts
+
+<span class="cm"># Download PT-BR voice (Faber)</span>
+mkdir -p ~/voices && cd ~/voices
+
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx.json
+
+<span class="cm"># Test speech synthesis</span>
+echo "Hello, I am running offline on Raspberry Pi." | \
+  python3 -m piper --model ~/voices/pt_BR-faber-medium.onnx \
+  --output_file /tmp/test.wav
+
+aplay /tmp/test.wav</pre>
+        </div>
+        <div class="note success">
+          <span class="note-ico">✓</span>
+          <div><strong data-i18n="note.part3.title">Part 3 done</strong> <span data-i18n="note.part3.body">If you heard the phrase through the speaker, Piper is working correctly.</span></div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step-block" id="script">
+        <div class="section-head">
+          <div class="step-badge">5</div>
+          <h2 data-i18n="s5.title">Integration Script — Full Pipeline</h2>
+          <span class="badge yellow" data-i18n="s5.badge">core of the project</span>
+        </div>
+        <p data-i18n="s5.desc">This script connects the three components in a continuous loop: record → transcribe → reason → speak.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">~/assistant/main.py</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code5">⎘</button>
+          </div>
+          <pre id="code5"><span class="kw">import</span> sounddevice <span class="kw">as</span> sd
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> requests
+<span class="kw">import</span> subprocess
+<span class="kw">import</span> tempfile
+<span class="kw">import</span> os
+<span class="kw">from</span> faster_whisper <span class="kw">import</span> WhisperModel
+
+<span class="cm"># ── Configuration ──────────────────────────────────────</span>
+WHISPER_MODEL  = <span class="str">"small"</span>         <span class="cm"># tiny | base | small | medium</span>
+OLLAMA_MODEL   = <span class="str">"gemma3:4b"</span>     <span class="cm"># any model pulled in Ollama</span>
+VOICE_MODEL    = <span class="str">"/root/voices/pt_BR-faber-medium.onnx"</span>
+OLLAMA_URL     = <span class="str">"http://localhost:11434/api/generate"</span>
+SAMPLERATE     = <span class="num">16000</span>
+RECORD_SECONDS = <span class="num">5</span>
+
+<span class="cm"># ── Load Whisper once ───────────────────────────────────</span>
+<span class="fn">print</span>(<span class="str">"⏳ Loading Whisper..."</span>)
+<span class="var">whisper</span> = WhisperModel(WHISPER_MODEL, device=<span class="str">"cpu"</span>, compute_type=<span class="str">"int8"</span>)
+<span class="fn">print</span>(<span class="str">"✅ Whisper ready"</span>)
+
+<span class="cm"># ── Conversation history ────────────────────────────────</span>
+<span class="var">history</span> = []
+
+<span class="kw">def</span> <span class="fn">record_audio</span>():
+    <span class="fn">print</span>(<span class="str">"\n🎙 Speak now..."</span>)
+    <span class="var">audio</span> = sd.rec(
+        <span class="fn">int</span>(RECORD_SECONDS * SAMPLERATE),
+        samplerate=SAMPLERATE, channels=<span class="num">1</span>, dtype=<span class="str">"float32"</span>
+    )
+    sd.wait()
+    <span class="kw">return</span> audio.flatten()
+
+<span class="kw">def</span> <span class="fn">transcribe</span>(audio):
+    <span class="var">segments</span>, _ = whisper.transcribe(audio, language=<span class="str">"pt"</span>)
+    <span class="var">text</span> = <span class="str">" "</span>.join(s.text <span class="kw">for</span> s <span class="kw">in</span> segments).strip()
+    <span class="fn">print</span>(<span class="str">f"🗣 You said: {text}"</span>)
+    <span class="kw">return</span> text
+
+<span class="kw">def</span> <span class="fn">ask_llm</span>(text):
+    history.append({<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: text})
+    <span class="var">prompt</span> = <span class="str">"\n"</span>.join(
+        <span class="str">f"{'User' if m['role']=='user' else 'Assistant'}: {m['content']}"</span>
+        <span class="kw">for</span> m <span class="kw">in</span> history[<span class="op">-</span><span class="num">6</span>:]
+    ) + <span class="str">"\nAssistant:"</span>
+
+    <span class="var">resp</span> = requests.post(OLLAMA_URL, json={
+        <span class="str">"model"</span>: OLLAMA_MODEL,
+        <span class="str">"prompt"</span>: prompt,
+        <span class="str">"stream"</span>: <span class="kw">False</span>,
+        <span class="str">"options"</span>: {<span class="str">"temperature"</span>: <span class="num">0.7</span>, <span class="str">"num_predict"</span>: <span class="num">200</span>}
+    })
+    <span class="var">answer</span> = resp.json()[<span class="str">"response"</span>].strip()
+    history.append({<span class="str">"role"</span>: <span class="str">"assistant"</span>, <span class="str">"content"</span>: answer})
+    <span class="fn">print</span>(<span class="str">f"🤖 Assistant: {answer}"</span>)
+    <span class="kw">return</span> answer
+
+<span class="kw">def</span> <span class="fn">speak</span>(text):
+    <span class="kw">with</span> tempfile.NamedTemporaryFile(suffix=<span class="str">".wav"</span>, delete=<span class="kw">False</span>) <span class="kw">as</span> f:
+        <span class="var">wav</span> = f.name
+    subprocess.run(
+        [<span class="str">"python3"</span>, <span class="str">"-m"</span>, <span class="str">"piper"</span>, <span class="str">"--model"</span>, VOICE_MODEL, <span class="str">"--output_file"</span>, wav],
+        input=text.encode(), capture_output=<span class="kw">True</span>
+    )
+    subprocess.run([<span class="str">"aplay"</span>, wav])
+    os.unlink(wav)
+
+<span class="cm"># ── Main loop ───────────────────────────────────────────</span>
+<span class="fn">print</span>(<span class="str">"\n🟢 Offline assistant started! Ctrl+C to exit.\n"</span>)
+<span class="kw">while</span> <span class="kw">True</span>:
+    <span class="kw">try</span>:
+        audio  = <span class="fn">record_audio</span>()
+        text   = <span class="fn">transcribe</span>(audio)
+        <span class="kw">if not</span> text:
+            <span class="kw">continue</span>
+        answer = <span class="fn">ask_llm</span>(text)
+        <span class="fn">speak</span>(answer)
+    <span class="kw">except</span> KeyboardInterrupt:
+        <span class="fn">print</span>(<span class="str">"\n👋 Shutting down..."</span>)
+        <span class="kw">break</span></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">terminal — run</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code5b">⎘</button>
+          </div>
+          <pre id="code5b">source ~/assistant/bin/activate
+python3 ~/assistant/main.py</pre>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="step-block">
+        <div class="section-head">
+          <div class="step-badge">6</div>
+          <h2 data-i18n="s6.title">Auto-start on Boot</h2>
+          <span class="badge green" data-i18n="s6.badge">optional</span>
+        </div>
+        <p data-i18n="s6.desc">Create a systemd service so the assistant starts automatically when the Pi powers on.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">/etc/systemd/system/assistant.service</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code6a">⎘</button>
+          </div>
+          <pre id="code6a">[Unit]
+Description=Offline AI Voice Assistant
+After=network.target ollama.service
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi
+ExecStart=/home/pi/assistant/bin/python3 /home/pi/assistant/main.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+            <span class="code-file">terminal</span>
+            <button class="copy-btn" aria-label="Copy code" data-target="code6b">⎘</button>
+          </div>
+          <pre id="code6b">sudo systemctl enable assistant
+sudo systemctl start assistant
+sudo systemctl status assistant</pre>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════ RAM TABLE ═══════════════════ -->
+    <section class="section">
+      <div class="section-head">
+        <div class="step-badge">★</div>
+        <h2 data-i18n="ram.title">Total Estimated RAM Usage</h2>
+      </div>
+      <table class="data-table ram-table">
+        <thead>
+          <tr>
+            <th data-i18n="ram.component">Component</th>
+            <th>RAM</th>
+            <th data-i18n="ram.note">Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td data-i18n="ram.os">OS + system</td><td>~400 MB</td><td>Raspberry Pi OS Lite</td></tr>
+          <tr><td>Whisper small</td><td class="green">~490 MB</td><td data-i18n="ram.loaded">loaded in memory</td></tr>
+          <tr><td>Ollama gemma3:4b</td><td class="yellow">~3.5 GB</td><td data-i18n="ram.running">model running</td></tr>
+          <tr><td>Piper TTS</td><td class="cyan">~120 MB</td><td data-i18n="ram.per">per process</td></tr>
+          <tr class="row-total">
+            <td><strong data-i18n="ram.total">TOTAL</strong></td>
+            <td class="green"><strong>~4.5 GB</strong></td>
+            <td class="green">✅ <span data-i18n="ram.ok">comfortable within 8 GB</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ═══════════════════════ NEXT STEPS ══════════════════ -->
+    <section class="section" id="next">
+      <div class="section-head">
+        <div class="step-badge">+</div>
+        <h2 data-i18n="next.title">Possible Evolutions</h2>
+      </div>
+      <div class="next-grid">
+        <div class="next-card">
+          <div class="next-icon">🔔</div>
+          <div class="next-name">Wake Word</div>
+          <div class="next-desc" data-i18n="next.wake">Add <code>openWakeWord</code> so the assistant only "wakes up" when it hears "Hey Pi", saving processing power.</div>
+        </div>
+        <div class="next-card">
+          <div class="next-icon">📄</div>
+          <div class="next-name">Local RAG</div>
+          <div class="next-desc" data-i18n="next.rag">Feed the LLM your own documents using <code>ChromaDB</code> — the assistant answers questions about your content.</div>
+        </div>
+        <div class="next-card">
+          <div class="next-icon">🏠</div>
+          <div class="next-name">Home Assistant</div>
+          <div class="next-desc" data-i18n="next.ha">Integrate with Home Assistant via local API to control lights, switches, and sensors by voice.</div>
+        </div>
+        <div class="next-card">
+          <div class="next-icon">🌐</div>
+          <div class="next-name">Web Interface</div>
+          <div class="next-desc" data-i18n="next.web">Deploy <code>Open WebUI</code> alongside Ollama to access the assistant from your phone via local network.</div>
+        </div>
+        <div class="next-card">
+          <div class="next-icon">📷</div>
+          <div class="next-name">Vision</div>
+          <div class="next-desc" data-i18n="next.vision">Add a camera and use a multimodal model (<code>llava</code>) to describe what's in front of the camera.</div>
+        </div>
+        <div class="next-card">
+          <div class="next-icon">🤖</div>
+          <div class="next-name">Automation</div>
+          <div class="next-desc" data-i18n="next.auto">Add gesture control with <code>MediaPipe</code> or smart camera alerts with <code>YOLOv8</code>.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════ FOOTER ══ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-left">
+          <span class="logo-icon">◈</span> Pi5 Voice AI
+          <span class="footer-sep">·</span>
+          <span data-i18n="footer.license">MIT License</span>
+        </div>
+        <div class="footer-right">
+          <a href="https://github.com" target="_blank" rel="noopener" data-i18n="footer.github">View on GitHub</a>
+          <span class="footer-sep">·</span>
+          <span data-i18n="footer.built">Built with Ollama, Whisper & Piper</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
